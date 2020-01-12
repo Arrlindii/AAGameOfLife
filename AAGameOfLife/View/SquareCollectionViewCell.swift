@@ -10,7 +10,13 @@ import UIKit
 
 class SquareCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var squareView: UIView!
-    func configureWith(_ state: Bool) {
-        squareView.backgroundColor = state ? .black : .white
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        squareView.layer.cornerRadius = squareView.bounds.size.width/2
+    }
+    
+    func configureWithState(_ isAlive: Bool) {
+        self.squareView.backgroundColor = isAlive ?  UIColor.mintColor : UIColor.purpleColor
     }
 }

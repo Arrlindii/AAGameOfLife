@@ -29,6 +29,10 @@ class Game {
         }
     }
     
+    func reset() {
+        self.generateInitialState()
+    }
+    
     func iterate() -> GameState  {
         var nextState = currentState
         for i in 0...width - 1 {
@@ -42,24 +46,32 @@ class Game {
     }
     
     func state(x: Int, y: Int) -> Bool {
+        let numberOfAliveNeighbours = aliveNeighbourCountAt(x: x, y: y)
+        let position = x + y*width
+        
+        let wasPrevioslyAlive = currentState[position].isAlive
+        if wasPrevioslyAlive {
+            return numberOfAliveNeighbours == 2 || numberOfAliveNeighbours == 3
+        } else {
+            return numberOfAliveNeighbours == 3
+        }
+    }
+    
+    func aliveNeighbourCountAt(x: Int, y: Int) -> Int {
         var numberOfAliveNeighbours = 0
-        let previousPosition = x + y*width
         for i in x-1...x+1 {
             for j in y-1...y+1 {
-                let positionInTheArray = j*width + i
-                guard positionInTheArray >= 0 && positionInTheArray < width*height && previousPosition != positionInTheArray else {continue}
-                if currentState[positionInTheArray].isAlive {
+                if (i == x && y == j) || (i >= width) || (i < 0) || (j < 0 ) {continue}
+                
+                let index = j*width + i
+                
+                guard index >= 0 && index < width*height else {continue}
+                if currentState[index].isAlive {
                     numberOfAliveNeighbours += 1
                 }
             }
         }
-        
-        let wasPrevioslyAlive = currentState[previousPosition].isAlive
-        if wasPrevioslyAlive {
-            return numberOfAliveNeighbours == 2 || numberOfAliveNeighbours == 3
-        } else { //Dead
-            return numberOfAliveNeighbours == 3
-        }
+        return numberOfAliveNeighbours
     }
     
     func setInitialState(_ state: GameState) {
@@ -70,15 +82,21 @@ class Game {
      We should feed the game an initial state to start with
      we can do it with random generated numbers i.e
      */
+    @discardableResult
     func generateInitialState() -> GameState {
-        let initialStatePoints = [1,16, 31, 96, 97, 111, 112, 20, 21, 36, 37, 137, 153, 168, 167,
-                                  156, 172, 187, 158, 173, 213, 214, 41, 56, 71, 76, 91, 92, 107,
-                                  116, 131, 101, 162, 163, 177, 178, 17, 117
-        ]
+        let maxItems = width*height - 1
+        let initialStatePoints = self.generateRandom(between: 0...maxItems, count: maxItems/8)
+
         for point in initialStatePoints{
             currentState[point] = Cell.makeLiveCell()
         }
         return self.currentState
+    }
+    
+    private func generateRandom(between range: ClosedRange<Int>, count: Int) -> [Int] {
+        return Array(0...count).map { _ in
+            Int.random(in: range)
+        }
     }
     
 }
